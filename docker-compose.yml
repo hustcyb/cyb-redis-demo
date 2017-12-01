@@ -1,0 +1,15 @@
+version: '3'
+services:
+  cyb-redis-demo:
+    container_name: cyb-redis-demo
+    image: hustcyb/cyb-redis-demo:1.0.0-SNAPSHOT
+    ports:
+      - "8080:8080"
+    links:
+      - redis-server
+
+  redis-server:
+    container_name: redis-server
+    image: redis
+    expose:
+      - "6379"

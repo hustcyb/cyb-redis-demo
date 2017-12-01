@@ -1,0 +1,19 @@
+logging:
+    level:
+        root: INFO
+        com:
+            cyb:
+                redis:
+                    demo: DEBUG
+
+spring:
+    redis:
+        host: redis-server
+        port: 6379
+        database: 0
+        password:
+        pool:
+            max-active: 8
+            max-wait: -1
+            max-idle: 8
+            min-idel: 0
