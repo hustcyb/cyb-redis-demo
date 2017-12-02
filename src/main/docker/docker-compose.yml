@@ -5,6 +5,8 @@ services:
     image: hustcyb/cyb-redis-demo:1.0.0-SNAPSHOT
     ports:
       - "8080:8080"
+    volumes:
+      - ./java/application.yml:/data/cyb-redis-demo/config/application.yml
     links:
       - redis-server
 
@@ -13,3 +15,7 @@ services:
     image: redis
     expose:
       - "6379"
+    volumes:
+      - ./redis/data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf

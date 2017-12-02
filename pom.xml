@@ -30,15 +30,41 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>com.cyb.redis.demo.Application</mainClass>
+						</manifest>
+					</archive>
+					<excludes>
+						<exclude>*.yml</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>make-zip</id>
+						<phase>package</phase>
 						<goals>
-							<goal>repackage</goal>
+							<goal>single</goal>
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.cyb.redis.demo.Application</mainClass>
+						</manifest>
+					</archive>
+					<finalName>${project.artifactId}</finalName>
+					<descriptor>src/main/assembly/assembly.xml</descriptor>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.spotify</groupId>
@@ -58,7 +84,10 @@
 					<tag>${project.version}</tag>
 					<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
 					<buildArgs>
-						<JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
+						<UNPACK_DIR>/data</UNPACK_DIR>
+						<WORK_DIR>/data/${project.artifactId}</WORK_DIR>
+						<PACKAGE_FILE>target/${project.artifactId}.tar.gz</PACKAGE_FILE>
+						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
 					</buildArgs>
 				</configuration>
 			</plugin>
