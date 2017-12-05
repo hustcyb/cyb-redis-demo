@@ -55,22 +55,38 @@ public class ValueService {
 	}
 
 	/**
-	 * 设置字符串缓存值
+	 * 保存字符串缓存值
 	 * 
 	 * @param key
 	 *            缓存键
 	 * @param value
 	 *            缓存值
 	 */
-	public void setValue(String key, String value) {
+	public void saveValue(String key, String value) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ValueService.setValue: start, key = {}, value = {}",
+			logger.debug("ValueService.saveValue: start, key = {}, value = {}",
 					key, value);
 		}
 
 		valueOperations.set(key, value);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ValueService.setValue: end");
+			logger.debug("ValueService.saveValue: end");
+		}
+	}
+
+	/**
+	 * 删除字符串缓存值
+	 * 
+	 * @param key
+	 */
+	public void deleteValue(String key) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ValueService.deleteValue: start, key = {}", key);
+		}
+
+		stringRedisTemplate.delete(key);
+		if (logger.isDebugEnabled()) {
+			logger.debug("ValueService.deleteValue: end");
 		}
 	}
 }

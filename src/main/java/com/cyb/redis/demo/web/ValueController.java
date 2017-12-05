@@ -4,6 +4,7 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cyb.redis.demo.service.ValueService;
 
-@RequestMapping("/value")
+/**
+ * 字符串控制器
+ * 
+ * @author Administrator
+ *
+ */
+@RequestMapping("/values")
 @RestController
 public class ValueController {
 
@@ -26,7 +33,7 @@ public class ValueController {
 	 * Redis服务
 	 */
 	@Resource
-	private ValueService redisService;
+	private ValueService valueService;
 
 	/**
 	 * 获取缓存值
@@ -41,7 +48,7 @@ public class ValueController {
 			logger.debug("ValueController.getValue: start, key = {}", key);
 		}
 
-		String value = redisService.getValue(key);
+		String value = valueService.getValue(key);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ValueController.getValue: end, return = {}", value);
 		}
@@ -50,7 +57,7 @@ public class ValueController {
 	}
 
 	/**
-	 * 设置缓存值
+	 * 保存缓存值
 	 * 
 	 * @param key
 	 *            缓存键
@@ -58,14 +65,32 @@ public class ValueController {
 	 *            缓存值
 	 */
 	@PostMapping("{key}")
-	public void setValue(@PathVariable String key, @RequestBody String value) {
+	public void saveValue(@PathVariable String key, @RequestBody String value) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ValueController.setValue: start, key = {}, value = {}");
+			logger.debug("ValueController.saveValue: start, key = {}, value = {}", key, value);
 		}
-		
-		redisService.setValue(key, value);
+
+		valueService.saveValue(key, value);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ValueController.setValue: end");
+			logger.debug("ValueController.saveValue: end");
+		}
+	}
+
+	/**
+	 * 缓存缓存值
+	 * 
+	 * @param key
+	 *            缓存值
+	 */
+	@DeleteMapping("{key}")
+	public void deleteValue(@PathVariable String key) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ValueController.deleteValue: start, key = {}");
+		}
+
+		valueService.deleteValue(key);
+		if (logger.isDebugEnabled()) {
+			logger.debug("ValueController.deleteValue: end");
 		}
 	}
 }
