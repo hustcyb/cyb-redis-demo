@@ -85,7 +85,7 @@ public class ValueController {
 	@DeleteMapping("{key}")
 	public void deleteValue(@PathVariable String key) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ValueController.deleteValue: start, key = {}");
+			logger.debug("ValueController.deleteValue: start, key = {}", key);
 		}
 
 		valueService.deleteValue(key);

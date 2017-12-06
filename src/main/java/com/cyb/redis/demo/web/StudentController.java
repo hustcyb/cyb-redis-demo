@@ -1,5 +1,7 @@
 package com.cyb.redis.demo.web;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
@@ -33,6 +35,66 @@ public class StudentController {
 	private StudentService studentService;
 
 	/**
+	 * 获取学生列表
+	 * 
+	 * @return 学生列表
+	 */
+	@GetMapping
+	public List<Student> getStudents() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getStudents: start");
+		}
+
+		List<Student> students = studentService.getStudents();
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getStudents: end, return = {}",
+					JsonUtils.bean2Json(students));
+		}
+
+		return students;
+	}
+
+	/**
+	 * 获取最新的学生列表
+	 * 
+	 * @return 最新的学生列表
+	 */
+	@GetMapping("new")
+	public List<Student> getNewStudents() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getNewStudents: start");
+		}
+
+		List<Student> newStudents = studentService.getNewStudents();
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getNewStudents: end, return = {}",
+					JsonUtils.bean2Json(newStudents));
+		}
+
+		return newStudents;
+	}
+
+	/**
+	 * 获取学生成绩排行榜
+	 * 
+	 * @return 学生成绩排行榜
+	 */
+	@GetMapping("rank")
+	public List<Student> getStudentRank() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getStudentRank: start");
+		}
+
+		List<Student> students = studentService.getStudentRank();
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getStudentRank: end, return = {}",
+					JsonUtils.bean2Json(students));
+		}
+
+		return students;
+	}
+
+	/**
 	 * 获取学生
 	 * 
 	 * @param id
@@ -56,7 +118,8 @@ public class StudentController {
 	/**
 	 * 保存学生
 	 * 
-	 * @param student 学生
+	 * @param student
+	 *            学生
 	 */
 	@PostMapping
 	public void saveStudent(@RequestBody Student student) {
