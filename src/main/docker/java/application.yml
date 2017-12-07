@@ -8,7 +8,7 @@ logging:
 
 spring:
     redis:
-        host: redis-server
+        host: redis-master
         port: 6379
         database: 0
         password: admin123
