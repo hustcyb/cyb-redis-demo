@@ -10,6 +10,15 @@ services:
     links:
       - redis-master
 
+  redis-master:
+    image: redis
+    expose:
+      - "6379"
+    volumes:
+      - ./redis-master/data:/data
+      - ./redis-master/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+
   redis-slave:
     image: redis
     expose:
@@ -20,11 +29,12 @@ services:
     links:
       - redis-master
 
-  redis-master:
+  redis-sentinel:
     image: redis
     expose:
-      - "6379"
+      - "26379"
     volumes:
-      - ./redis-master/data:/data
-      - ./redis-master/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+      - ./redis-sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    command: redis-server /usr/local/etc/redis/sentinel.conf --sentinel
+    links:
+      - redis-master
