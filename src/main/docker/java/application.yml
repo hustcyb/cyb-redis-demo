@@ -8,10 +8,13 @@ logging:
 
 spring:
     redis:
-        host: redis-master
-        port: 6379
+        # host: redis-master
+        # port: 6379
         database: 0
         password: admin123
+        sentinel:
+            master: redis-cluster
+            nodes: redis-sentinel_1:26379, redis-sentinel_2:26379, redis-sentinel_3:26379
         pool:
             max-active: 8
             max-wait: -1

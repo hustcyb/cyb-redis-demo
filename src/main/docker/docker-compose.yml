@@ -8,33 +8,26 @@ services:
     volumes:
       - ./java/application.yml:/data/cyb-redis-demo/config/application.yml
     links:
-      - redis-master
+      - redis-sentinel
 
   redis-master:
-    image: redis
+    image: redis-master
+    build: ./redis-master
     expose:
       - "6379"
-    volumes:
-      - ./redis-master/data:/data
-      - ./redis-master/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
 
   redis-slave:
-    image: redis
+    image: redis-slave
+    build: ./redis-slave
     expose:
       - "6379"
-    volumes:
-      - ./redis-slave/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
     links:
       - redis-master
 
   redis-sentinel:
-    image: redis
+    image: redis-sentinel
+    build: ./redis-sentinel
     expose:
       - "26379"
-    volumes:
-      - ./redis-sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
-    command: redis-server /usr/local/etc/redis/sentinel.conf --sentinel
     links:
       - redis-master
