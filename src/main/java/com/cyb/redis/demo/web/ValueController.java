@@ -20,7 +20,7 @@ import com.cyb.redis.demo.service.ValueService;
  * @author Administrator
  *
  */
-@RequestMapping("/values")
+@RequestMapping("values")
 @RestController
 public class ValueController {
 

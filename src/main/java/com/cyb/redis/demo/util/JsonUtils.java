@@ -1,6 +1,9 @@
-package com.cyb.redis.demo.common;
+package com.cyb.redis.demo.util;
 
 import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public final class JsonUtils {
+
+	/**
+	 * 日志接口
+	 */
+	private static final Logger logger = LoggerFactory
+			.getLogger(JsonUtils.class);
 
 	/**
 	 * 将对象序列化为json字符串
@@ -27,7 +36,7 @@ public final class JsonUtils {
 		try {
 			json = mapper.writeValueAsString(bean);
 		} catch (JsonProcessingException e) {
-			e.printStackTrace();
+			logger.error("json序列化出错", e);
 		}
 
 		return json;
@@ -47,7 +56,7 @@ public final class JsonUtils {
 		try {
 			bean = mapper.readValue(json, beanType);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("json反序列化出错", e);
 		}
 
 		return bean;

@@ -17,3 +17,6 @@ spring:
             max-wait: -1
             max-idle: 8
             min-idel: 0
+    cache:
+        redis:
+            time-to-live: 600000  # 单位毫秒

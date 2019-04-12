@@ -9,15 +9,15 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
-import com.cyb.redis.demo.common.JsonUtils;
 import com.cyb.redis.demo.domain.Student;
-import com.google.common.base.Function;
+import com.cyb.redis.demo.util.JsonUtils;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
@@ -39,22 +39,26 @@ public class StudentService {
 	/**
 	 * 学生信息缓存键格式
 	 */
-	private static final String studentKeyFormat = "students/{0}";
+	@Value("${cache.student.id.key.format:STUD:{0}}")
+	private String studentKeyFormat;
 
 	/**
 	 * 学生列表缓存键
 	 */
-	private static final String studentsKey = "students";
+	@Value("${cache.student.key:STUD}")
+	private String studentsKey;
 
 	/**
 	 * 新学生缓存键
 	 */
-	private static final String newStudentsKey = "students/new";
+	@Value("${cache.student.new.key:STUD:NEW}")
+	private String newStudentsKey;
 
 	/**
-	 * 学生成绩排行榜缓存键
+	 * 学生成绩排名缓存键
 	 */
-	private static final String studentRankKey = "students/rank";
+	@Value("${cache.student.top.key:STUD:TOP}")
+	private String topStudentKey;
 
 	/**
 	 * Redis学生接口
@@ -85,24 +89,16 @@ public class StudentService {
 	 * 
 	 * @return 学生列表
 	 */
-	public List<Student> getStudents() {
+	public List<Student> listStudents() {
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentService.getStudents: start");
+			logger.debug("StudentService.listStudents: start");
 		}
 
 		List<Integer> ids = studentListOperations.range(studentsKey, 0, -1);
-		List<String> studentKeys = Lists.transform(ids,
-				new Function<Integer, String>() {
-					@Override
-					public String apply(Integer id) {
-						return MessageFormat.format(studentKeyFormat, id);
-					}
-
-				});
-
+		List<String> studentKeys = Lists.transform(ids, this::getStudentKey);
 		List<Student> students = valueOperations.multiGet(studentKeys);
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentService.getStudents: end, return = {}",
+			logger.debug("StudentService.listStudents: end, return = {}",
 					JsonUtils.bean2Json(students));
 		}
 
@@ -114,23 +110,16 @@ public class StudentService {
 	 * 
 	 * @return
 	 */
-	public List<Student> getNewStudents() {
+	public List<Student> listNewStudents() {
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentService.start: start");
+			logger.debug("StudentService.listNewStudents: start");
 		}
 
 		List<Integer> ids = studentListOperations.range(newStudentsKey, 0, -1);
-		List<String> studentKeys = Lists.transform(ids,
-				new Function<Integer, String>() {
-					@Override
-					public String apply(Integer id) {
-						return MessageFormat.format(studentKeyFormat, id);
-					}
-				});
-
+		List<String> studentKeys = Lists.transform(ids, this::getStudentKey);
 		List<Student> newStudents = valueOperations.multiGet(studentKeys);
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentService.getNewStudents: end, return = {}",
+			logger.debug("StudentService.listNewStudents: end, return = {}",
 					JsonUtils.bean2Json(newStudents));
 		}
 
@@ -138,28 +127,22 @@ public class StudentService {
 	}
 
 	/**
-	 * 获取学生成绩排行榜
+	 * 获取学生成绩排名
 	 * 
-	 * @return 学生成绩排行榜
+	 * @return 学生成绩排名
 	 */
-	public List<Student> getStudentRank() {
+	public List<Student> listTopStudents() {
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentService.getStudentRank: start");
+			logger.debug("StudentService.listTopStudents: start");
 		}
 
-		Set<Integer> ids = studentZSetOperations.reverseRange(studentRankKey,
+		Set<Integer> ids = studentZSetOperations.reverseRange(topStudentKey,
 				0, -1);
 		Collection<String> studentKeys = Collections2.transform(ids,
-				new Function<Integer, String>() {
-					@Override
-					public String apply(Integer id) {
-						return MessageFormat.format(studentKeyFormat, id);
-					}
-				});
-
+				this::getStudentKey);
 		List<Student> studentRank = valueOperations.multiGet(studentKeys);
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentService.getStudentRank: end, return = {}",
+			logger.debug("StudentService.listTopStudents: end, return = {}",
 					JsonUtils.bean2Json(studentRank));
 		}
 
@@ -178,7 +161,7 @@ public class StudentService {
 			logger.debug("StudentService.getStudent: start, id = {}", id);
 		}
 
-		String studentKey = MessageFormat.format(studentKeyFormat, id);
+		String studentKey = getStudentKey(id);
 		Student student = valueOperations.get(studentKey);
 		if (logger.isDebugEnabled()) {
 			logger.debug("StudentService.getStudent: end, return = {}",
@@ -201,15 +184,15 @@ public class StudentService {
 		}
 
 		Integer id = student.getId();
-		String studentKey = MessageFormat.format(studentKeyFormat, id);
+		String studentKey = getStudentKey(id);
 		valueOperations.set(studentKey, student);
 
-		studentListOperations.leftPush("students", id);
-		studentListOperations.leftPush("students/new", id);
+		studentListOperations.leftPush(studentsKey, id);
+		studentListOperations.leftPush(newStudentsKey, id);
 		studentListOperations.trim(newStudentsKey, 0, 1);
 
-		studentZSetOperations.add(studentRankKey, id, student.getScore());
-		studentZSetOperations.removeRange(studentRankKey, 0, -3);
+		studentZSetOperations.add(topStudentKey, id, student.getScore());
+		studentZSetOperations.removeRange(topStudentKey, 0, -3);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("StudentService.saveStudent: end");
@@ -227,17 +210,27 @@ public class StudentService {
 			logger.debug("StudentService.deleteStudent: start, id = {}", id);
 		}
 
-		String studentKey = MessageFormat.format(studentKeyFormat, id);
+		String studentKey = getStudentKey(id);
 		redisTemplate.delete(studentKey);
 
 		studentListOperations.remove(studentsKey, 0, id);
 		studentListOperations.remove(newStudentsKey, 0, id);
 
-		studentZSetOperations.remove(studentRankKey, id);
+		studentZSetOperations.remove(topStudentKey, id);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("StudentService.deleteStudent: end");
 		}
 	}
 
+	/**
+	 * 获取学生缓存键
+	 * 
+	 * @param id
+	 *            学生编号
+	 * @return 缓存键
+	 */
+	private String getStudentKey(Integer id) {
+		return MessageFormat.format(studentKeyFormat, id);
+	}
 }

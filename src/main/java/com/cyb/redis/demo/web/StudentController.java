@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cyb.redis.demo.common.JsonUtils;
 import com.cyb.redis.demo.domain.Student;
 import com.cyb.redis.demo.service.StudentService;
+import com.cyb.redis.demo.util.JsonUtils;
 
 @RequestMapping("students")
 @RestController
@@ -40,14 +40,14 @@ public class StudentController {
 	 * @return 学生列表
 	 */
 	@GetMapping
-	public List<Student> getStudents() {
+	public List<Student> listStudents() {
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentController.getStudents: start");
+			logger.debug("StudentController.listStudents: start");
 		}
 
-		List<Student> students = studentService.getStudents();
+		List<Student> students = studentService.listStudents();
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentController.getStudents: end, return = {}",
+			logger.debug("StudentController.listStudents: end, return = {}",
 					JsonUtils.bean2Json(students));
 		}
 
@@ -60,14 +60,14 @@ public class StudentController {
 	 * @return 最新的学生列表
 	 */
 	@GetMapping("new")
-	public List<Student> getNewStudents() {
+	public List<Student> listNewStudents() {
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentController.getNewStudents: start");
+			logger.debug("StudentController.listNewStudents: start");
 		}
 
-		List<Student> newStudents = studentService.getNewStudents();
+		List<Student> newStudents = studentService.listNewStudents();
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentController.getNewStudents: end, return = {}",
+			logger.debug("StudentController.listNewStudents: end, return = {}",
 					JsonUtils.bean2Json(newStudents));
 		}
 
@@ -75,19 +75,19 @@ public class StudentController {
 	}
 
 	/**
-	 * 获取学生成绩排行榜
+	 * 获取学生成绩排名
 	 * 
-	 * @return 学生成绩排行榜
+	 * @return 学生成绩排名
 	 */
-	@GetMapping("rank")
-	public List<Student> getStudentRank() {
+	@GetMapping("top")
+	public List<Student> listTopStudents() {
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentController.getStudentRank: start");
+			logger.debug("StudentController.listTopStudents: start");
 		}
 
-		List<Student> students = studentService.getStudentRank();
+		List<Student> students = studentService.listTopStudents();
 		if (logger.isDebugEnabled()) {
-			logger.debug("StudentController.getStudentRank: end, return = {}",
+			logger.debug("StudentController.listTopStudents: end, return = {}",
 					JsonUtils.bean2Json(students));
 		}
 
