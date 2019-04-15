@@ -1,6 +1,7 @@
 package com.cyb.redis.demo.web;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 
@@ -113,6 +114,63 @@ public class StudentController {
 		}
 
 		return student;
+	}
+
+	/**
+	 * 获取学生统计字典
+	 * 
+	 * @return 学生统计字典
+	 */
+	@GetMapping("stats")
+	public Map<String, Long> listStudentStats() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.listStudentStats: start");
+		}
+		
+		Map<String, Long> stats = studentService.listStudentStats();
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.listStudentStats: end, return = {}");
+		}
+		
+		return stats;
+	}
+
+	/**
+	 * 获取学生人数
+	 * 
+	 * @return 学生人数
+	 */
+	@GetMapping("stats/student")
+	public Long getStudentCount() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getStudentCount: start");
+		}
+		
+		Long studentCount = studentService.getStudentCount();
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getStudentCount: end, return = {}", studentCount);
+		}
+		
+		return studentCount;
+	}
+
+	/**
+	 * 获取优秀学生人数
+	 * 
+	 * @return 优秀学生人数
+	 */
+	@GetMapping("stats/excellent")
+	public Long getExcellentCount() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getExcellentCount: start");
+		}
+		
+		Long excellentCount = studentService.getExcellentCount();
+		if (logger.isDebugEnabled()) {
+			logger.debug("StudentController.getExcellentCount: end, return = {}", excellentCount);
+		}
+		
+		return excellentCount;
 	}
 
 	/**

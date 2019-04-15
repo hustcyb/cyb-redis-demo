@@ -3,6 +3,7 @@ package com.cyb.redis.demo.service;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -10,6 +11,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -61,6 +63,22 @@ public class StudentService {
 	private String topStudentKey;
 
 	/**
+	 * 学生统计缓存键
+	 */
+	@Value("${cache.student.stat.key:STUD:STAT}")
+	private String studentStatKey;
+
+	/**
+	 * 学生人数字段名称
+	 */
+	private String studentCountField = "studentCount";
+
+	/**
+	 * 优秀学生人数字段名称
+	 */
+	private String excellentCountField = "excellentCount";
+
+	/**
 	 * Redis学生接口
 	 */
 	@Resource
@@ -71,6 +89,12 @@ public class StudentService {
 	 */
 	@Resource(name = "redisTemplate")
 	private ValueOperations<String, Student> valueOperations;
+
+	/**
+	 * 学生计数操作接口
+	 */
+	@Resource(name = "redisTemplate")
+	private HashOperations<String, String, Long> studentHashOperations;
 
 	/**
 	 * 学生列表操作接口
@@ -136,8 +160,8 @@ public class StudentService {
 			logger.debug("StudentService.listTopStudents: start");
 		}
 
-		Set<Integer> ids = studentZSetOperations.reverseRange(topStudentKey,
-				0, -1);
+		Set<Integer> ids = studentZSetOperations.reverseRange(topStudentKey, 0,
+				-1);
 		Collection<String> studentKeys = Collections2.transform(ids,
 				this::getStudentKey);
 		List<Student> studentRank = valueOperations.multiGet(studentKeys);
@@ -172,6 +196,33 @@ public class StudentService {
 	}
 
 	/**
+	 * 获取学生统计
+	 * 
+	 * @return 学生统计
+	 */
+	public Map<String, Long> listStudentStats() {
+		return studentHashOperations.entries(studentStatKey);
+	}
+
+	/**
+	 * 获取学生人数
+	 * 
+	 * @return 学生人数
+	 */
+	public Long getStudentCount() {
+		return studentHashOperations.get(studentStatKey, studentCountField);
+	}
+
+	/**
+	 * 获取优秀学生人数
+	 * 
+	 * @return
+	 */
+	public Long getExcellentCount() {
+		return studentHashOperations.get(studentStatKey, excellentCountField);
+	}
+
+	/**
 	 * 保存学生
 	 * 
 	 * @param student
@@ -186,6 +237,12 @@ public class StudentService {
 		Integer id = student.getId();
 		String studentKey = getStudentKey(id);
 		valueOperations.set(studentKey, student);
+
+		studentHashOperations.increment(studentStatKey, studentCountField, 1L);
+		if (student.getScore() >= 80) {
+			studentHashOperations
+					.increment(studentStatKey, excellentCountField, 1L);
+		}
 
 		studentListOperations.leftPush(studentsKey, id);
 		studentListOperations.leftPush(newStudentsKey, id);
@@ -210,6 +267,14 @@ public class StudentService {
 			logger.debug("StudentService.deleteStudent: start, id = {}", id);
 		}
 
+		Student student = getStudent(id);
+		if (student != null) {
+			studentHashOperations.increment(studentStatKey, studentCountField, -1);
+			if (student.getScore() >= 80) {
+				studentHashOperations.increment(studentStatKey, excellentCountField, -1);
+			}
+		}
+		
 		String studentKey = getStudentKey(id);
 		redisTemplate.delete(studentKey);
 
