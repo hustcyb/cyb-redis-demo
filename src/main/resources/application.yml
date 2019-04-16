@@ -19,4 +19,4 @@ spring:
             min-idel: 0
     cache:
         redis:
-            time-to-live: 600000  # 单位毫秒
+            time-to-live: 120000  # 单位毫秒
