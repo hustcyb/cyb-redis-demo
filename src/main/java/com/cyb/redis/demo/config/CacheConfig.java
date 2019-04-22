@@ -12,6 +12,7 @@ import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -70,8 +71,12 @@ public class CacheConfig {
 		final RedisCacheWriter redisCacheWriter = RedisCacheWriter
 				.lockingRedisCacheWriter(connectionFactory);
 		final RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration
-				.defaultCacheConfig().entryTtl(Duration.ofSeconds(120))
-				.computePrefixWith(cacheKeyPrefix());
+				.defaultCacheConfig()
+				.entryTtl(Duration.ofSeconds(120))
+				.computePrefixWith(cacheKeyPrefix())
+				.serializeValuesWith(
+						SerializationPair
+								.fromSerializer(new StringRedisSerializer()));
 		return new RedisCacheManager(redisCacheWriter, cacheConfiguration);
 	}
 
