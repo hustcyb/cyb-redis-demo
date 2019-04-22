@@ -5,6 +5,7 @@ import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
@@ -38,26 +39,57 @@ public class CacheConfig {
 		RedisSerializer<String> stringRedisSerializer = new StringRedisSerializer();
 		redisTemplate.setKeySerializer(stringRedisSerializer);
 		redisTemplate.setHashKeySerializer(stringRedisSerializer);
-		GenericToStringSerializer<Long> longSerializer = new GenericToStringSerializer<Long>(Long.class);
+		GenericToStringSerializer<Long> longSerializer = new GenericToStringSerializer<Long>(
+				Long.class);
 		redisTemplate.setHashValueSerializer(longSerializer);
 
 		return redisTemplate;
 	}
-	
+
+	/**
+	 * 创建缓存键前缀生成程序
+	 * 
+	 * @return 缓存键前缀生成程序
+	 */
+	@Bean
+	public CacheKeyPrefix cacheKeyPrefix() {
+		return cacheName -> cacheName + ":";
+	}
+
+	/**
+	 * 创建默认的redis缓存管理程序
+	 * 
+	 * @param connectionFactory
+	 *            redis连接工厂
+	 * @return 默认的redis缓存管理程序
+	 */
 	@Primary
 	@Bean
-	public RedisCacheManager cacheManager(final RedisConnectionFactory connectionFactory) {
-		final RedisCacheWriter redisCacheWriter = RedisCacheWriter.lockingRedisCacheWriter(connectionFactory);
-	    final RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofSeconds(120));
-	    final RedisCacheManager redisCacheManager = new RedisCacheManager(redisCacheWriter, cacheConfiguration);
-	    return redisCacheManager;
+	public RedisCacheManager cacheManager(
+			final RedisConnectionFactory connectionFactory) {
+		final RedisCacheWriter redisCacheWriter = RedisCacheWriter
+				.lockingRedisCacheWriter(connectionFactory);
+		final RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration
+				.defaultCacheConfig().entryTtl(Duration.ofSeconds(120))
+				.computePrefixWith(cacheKeyPrefix());
+		return new RedisCacheManager(redisCacheWriter, cacheConfiguration);
 	}
-	
+
+	/**
+	 * 创建redis学生缓存管理程序
+	 * 
+	 * @param connectionFactory
+	 *            redis连接工厂
+	 * @return redis学生缓存管理程序
+	 */
 	@Bean(name = "studentCacheManager")
-	public RedisCacheManager studentCacheManager(final RedisConnectionFactory connectionFactory) {
-		final RedisCacheWriter redisCacheWriter = RedisCacheWriter.lockingRedisCacheWriter(connectionFactory);
-		final RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofSeconds(300));
-	    final RedisCacheManager redisCacheManager = new RedisCacheManager(redisCacheWriter, cacheConfiguration);
-	    return redisCacheManager;	
+	public RedisCacheManager studentCacheManager(
+			final RedisConnectionFactory connectionFactory) {
+		final RedisCacheWriter redisCacheWriter = RedisCacheWriter
+				.lockingRedisCacheWriter(connectionFactory);
+		final RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration
+				.defaultCacheConfig().entryTtl(Duration.ofSeconds(300))
+				.computePrefixWith(cacheKeyPrefix());
+		return new RedisCacheManager(redisCacheWriter, cacheConfiguration);
 	}
 }

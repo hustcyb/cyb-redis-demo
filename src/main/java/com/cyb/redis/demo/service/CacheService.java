@@ -53,7 +53,7 @@ public class CacheService {
 	 * @param key 键
 	 * @return 值
 	 */
-	@Cacheable(key = "'VALUE:' + #key")
+	@Cacheable(key = "'VAL:' + #key")
 	public String getValue(String key) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("CacheableService.getValueByKey: start, key = {}", key);
